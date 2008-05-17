@@ -3,16 +3,41 @@
 default: all
 
 all:\
+sdl-mixer.ali sdl-mixer.o
+
+# -- SYSDEPS start
+flags-sdl-ada:
+	@echo SYSDEPS sdl-ada-flags run create flags-sdl-ada 
+	@(cd SYSDEPS/modules/sdl-ada-flags && ./run)
+libs-sdl-ada:
+	@echo SYSDEPS sdl-ada-libs run create libs-sdl-ada 
+	@(cd SYSDEPS/modules/sdl-ada-libs && ./run)
+
+
+sdl-ada-flags_clean:
+	@echo SYSDEPS sdl-ada-flags clean flags-sdl-ada 
+	@(cd SYSDEPS/modules/sdl-ada-flags && ./clean)
+sdl-ada-libs_clean:
+	@echo SYSDEPS sdl-ada-libs clean libs-sdl-ada 
+	@(cd SYSDEPS/modules/sdl-ada-libs && ./clean)
+
+
+sysdeps_clean:\
+sdl-ada-flags_clean \
+sdl-ada-libs_clean \
+
+
+# -- SYSDEPS end
 
 
 ada-bind:\
-conf-adabind conf-systype conf-adatype
+conf-adabind conf-systype conf-adatype conf-adafflist flags-sdl-ada
 
 ada-compile:\
-conf-adacomp conf-adatype conf-systype
+conf-adacomp conf-adatype conf-systype conf-adafflist flags-sdl-ada
 
 ada-link:\
-conf-adalink conf-adatype conf-systype
+conf-adalink conf-adatype conf-systype conf-aldfflist libs-sdl-ada
 
 ada-srcmap:\
 conf-adacomp conf-adatype conf-systype
@@ -64,9 +89,17 @@ conf-cc
 mk-systype:\
 conf-cc
 
-clean-all: obj_clean ext_clean
+sdl-mixer.ali:\
+ada-compile sdl-mixer.ads sdl-mixer.ads
+	./ada-compile sdl-mixer.ads
+
+sdl-mixer.o:\
+sdl-mixer.ali
+
+clean-all: sysdeps_clean obj_clean ext_clean
 clean: obj_clean
 obj_clean:
+	rm -f sdl-mixer.ali sdl-mixer.o
 ext_clean:
 	rm -f conf-adatype conf-cctype conf-ldtype conf-systype mk-ctxt
 
