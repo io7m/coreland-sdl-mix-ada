@@ -7,7 +7,7 @@ ctxt/bindir.o ctxt/ctxt.a ctxt/dlibdir.o ctxt/incdir.o ctxt/repos.o \
 ctxt/slibdir.o ctxt/version.o deinstaller deinstaller.o inst-check inst-check.o \
 inst-copy inst-copy.o inst-dir inst-dir.o inst-link inst-link.o install_core.o \
 install_error.o installer installer.o instchk instchk.o insthier.o \
-sdl-mix-ada-conf sdl-mix-ada-conf.o sdl-mixer.ali sdl-mixer.o
+sdl-mix-ada-conf sdl-mix-ada-conf.o sdl-mix-ada.a sdl-mixer.ali sdl-mixer.o
 
 # Mkf-deinstall
 deinstall: deinstaller inst-check inst-copy inst-dir inst-link
@@ -56,7 +56,8 @@ ada-bind:\
 conf-adabind conf-systype conf-adatype conf-adafflist flags-sdl-ada
 
 ada-compile:\
-conf-adacomp conf-adatype conf-systype conf-adafflist flags-sdl-ada
+conf-adacomp conf-adatype conf-systype conf-adacflags conf-adafflist \
+	flags-sdl-ada
 
 ada-link:\
 conf-adalink conf-adatype conf-systype conf-aldfflist libs-sdl-ada
@@ -81,12 +82,16 @@ mk-adatype
 	./mk-adatype > conf-adatype.tmp && mv conf-adatype.tmp conf-adatype
 
 conf-cctype:\
-conf-cc conf-cc mk-cctype
+conf-cc mk-cctype
 	./mk-cctype > conf-cctype.tmp && mv conf-cctype.tmp conf-cctype
 
 conf-ldtype:\
-conf-ld conf-ld mk-ldtype
+conf-ld mk-ldtype
 	./mk-ldtype > conf-ldtype.tmp && mv conf-ldtype.tmp conf-ldtype
+
+conf-sosuffix:\
+mk-sosuffix
+	./mk-sosuffix > conf-sosuffix.tmp && mv conf-sosuffix.tmp conf-sosuffix
 
 conf-systype:\
 mk-systype
@@ -242,6 +247,9 @@ conf-ld conf-systype conf-cctype
 mk-mk-ctxt:\
 conf-cc
 
+mk-sosuffix:\
+conf-systype
+
 mk-systype:\
 conf-cc
 
@@ -252,6 +260,10 @@ cc-link sdl-mix-ada-conf.ld sdl-mix-ada-conf.o ctxt/ctxt.a
 sdl-mix-ada-conf.o:\
 cc-compile sdl-mix-ada-conf.c ctxt.h
 	./cc-compile sdl-mix-ada-conf.c
+
+sdl-mix-ada.a:\
+cc-slib sdl-mix-ada.sld sdl-mixer.o
+	./cc-slib sdl-mix-ada sdl-mixer.o
 
 sdl-mixer.ali:\
 ada-compile sdl-mixer.adb
@@ -268,10 +280,10 @@ obj_clean:
 	ctxt/slibdir.o ctxt/version.c ctxt/version.o deinstaller deinstaller.o \
 	inst-check inst-check.o inst-copy inst-copy.o inst-dir inst-dir.o inst-link \
 	inst-link.o install_core.o install_error.o installer installer.o instchk \
-	instchk.o insthier.o sdl-mix-ada-conf sdl-mix-ada-conf.o sdl-mixer.ali \
-	sdl-mixer.o
+	instchk.o insthier.o sdl-mix-ada-conf sdl-mix-ada-conf.o sdl-mix-ada.a \
+	sdl-mixer.ali sdl-mixer.o
 ext_clean:
-	rm -f conf-adatype conf-cctype conf-ldtype conf-systype mk-ctxt
+	rm -f conf-adatype conf-cctype conf-ldtype conf-sosuffix conf-systype mk-ctxt
 
 regen:\
 ada-srcmap ada-srcmap-all
