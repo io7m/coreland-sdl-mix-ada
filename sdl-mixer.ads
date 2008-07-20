@@ -12,40 +12,40 @@ package SDL.mixer is
 
   use type c.int;
 
-  type mixer_func is
-    access procedure (udata: void_ptr; stream: uint8_ptr; len: c.int);
-  pragma convention (c, mixer_func);
-  type music_finished_func is access procedure;
-  pragma convention (c, music_finished_func);
-  type channel_finished_func is access procedure (channel: c.int);
-  pragma convention (c, channel_finished_func);
+  type mixer_func_t is
+    access procedure (udata: void_ptr_t; stream: uint8_ptr; len: c.int);
+  pragma convention (c, mixer_func_t);
+  type music_finished_func_t is access procedure;
+  pragma convention (c, music_finished_func_t);
+  type channel_finished_func_t is access procedure (channel: c.int);
+  pragma convention (c, channel_finished_func_t);
 
   -- The internal format for an audio chunk.
-  type Chunk is record
+  type chunk_t is record
     allocated: c.int;
          abuf: uint8_ptr;
          alen: uint32;
        volume: uint8;
   end record;
-  type Chunk_ptr is access all Chunk;
-  pragma convention (c, Chunk);
-  pragma convention (c, Chunk_ptr);
+  type chunk_ptr_t is access all chunk_t;
+  pragma convention (c, chunk_t);
+  pragma convention (c, chunk_ptr_t);
 
   -- The different fading types supported.
-  type Fading_type is (
+  type fading_type_t is (
     NO_FADING,
     FADING_OUT,
     FADING_IN
   );
-  for Fading_type use (
+  for fading_type_t use (
     NO_FADING => 0,
     FADING_OUT => 1,
     FADING_IN => 2
   );
-  pragma convention (c, Fading_type);
+  pragma convention (c, fading_type_t);
 
   -- Type of music
-  type MusicType is (
+  type music_type_t is (
     MUSIC_NONE,
     MUSIC_CMD,
     MUSIC_WAV,
@@ -55,7 +55,7 @@ package SDL.mixer is
     MUSIC_MP3,
     MUSIC_MP3_MAD
   );
-  for MusicType use (
+  for music_type_t use (
     MUSIC_NONE => 0,
     MUSIC_CMD => 1,
     MUSIC_WAV => 2,
@@ -65,22 +65,22 @@ package SDL.mixer is
     MUSIC_MP3 => 6,
     MUSIC_MP3_MAD => 7
   );
-  pragma convention (c, MusicType);
+  pragma convention (c, music_type_t);
 
   -- The internal format for a music chunk interpreted via mikmod.
-  type Music is new void_ptr;
-  type Music_ptr is access all void_ptr;
-  pragma convention (c, Music);
-  pragma convention (c, Music_ptr);
+  type music_t is new void_ptr_t;
+  type music_ptr_t is access all void_ptr_t;
+  pragma convention (c, music_t);
+  pragma convention (c, music_ptr_t);
 
   --
   -- API functions.
   --
 
   -- Open the mixer with a certain audio format.
-  function OpenAudio (freq: c.int; format: au.audio_format;
+  function OpenAudio (freq: c.int; format: au.audio_format_t;
     channels, chunksize: c.int) return c.int;
-  function open_audio (freq: c.int; format: au.audio_format;
+  function open_audio (freq: c.int; format: au.audio_format_t;
     channels, chunksize: c.int) return c.int;
   pragma import (c, OpenAudio, "Mix_OpenAudio");
   pragma import (c, open_audio, "Mix_OpenAudio");
@@ -92,60 +92,60 @@ package SDL.mixer is
   pragma import (c, allocate_channels, "Mix_AllocateChannels");
 
   -- Find out what the actual audio device parameters are.
-  function QuerySpec (freq: access c.int; format: access au.audio_format;
+  function QuerySpec (freq: access c.int; format: access au.audio_format_t;
     channels: access c.int) return c.int;
-  function query_spec (freq: access c.int; format: access au.audio_format;
+  function query_spec (freq: access c.int; format: access au.audio_format_t;
     channels: access c.int) return c.int;
   pragma import (c, QuerySpec, "Mix_QuerySpec");
   pragma import (c, query_spec, "Mix_QuerySpec");
 
   -- Load a wave file or a music (.mod .s3m .it .xm)
-  function LoadWAV_RW (src: rw.rwops_ptr; freesrc: c.int) return Chunk_ptr;
-  function load_wav_rw (src: rw.rwops_ptr; freesrc: c.int) return Chunk_ptr;
+  function LoadWAV_RW (src: rw.rwops_ptr_t; freesrc: c.int) return chunk_ptr_t;
+  function load_wav_rw (src: rw.rwops_ptr_t; freesrc: c.int) return chunk_ptr_t;
   pragma import (c, LoadWAV_RW, "Mix_LoadWAV_RW");
   pragma import (c, load_wav_rw, "Mix_LoadWAV_RW");
 
-  function LoadWAV (file: string) return Chunk_ptr;
-  function load_wav (file: string) return Chunk_ptr renames LoadWAV;
+  function LoadWAV (file: string) return chunk_ptr_t;
+  function load_wav (file: string) return chunk_ptr_t renames LoadWAV;
   pragma import (c, LoadWAV, "Mix_LoadWAV_RW");
 
   -- Free an audio chunk previously loaded.
-  procedure FreeChunk (cptr: Chunk_ptr);
-  procedure free_chunk (cptr: Chunk_ptr) renames FreeChunk;
+  procedure FreeChunk (cptr: chunk_ptr_t);
+  procedure free_chunk (cptr: chunk_ptr_t) renames FreeChunk;
   pragma import (c, FreeChunk, "Mix_FreeChunk");
 
-  procedure FreeMusic (cptr: Music_ptr);
-  procedure free_music (cptr: Music_ptr) renames FreeMusic;
+  procedure FreeMusic (cptr: music_ptr_t);
+  procedure free_music (cptr: music_ptr_t) renames FreeMusic;
   pragma import (c, FreeMusic, "Mix_FreeMusic");
 
   -- Find out the music format of a mixer music.
-  function GetMusicType (mus: Music_ptr) return MusicType;
-  function get_music_type (mus: Music_ptr) return MusicType renames GetMusicType;
+  function GetMusicType (mus: music_ptr_t) return music_type_t;
+  function get_music_type (mus: music_ptr_t) return music_type_t renames GetMusicType;
   pragma import (c, GetMusicType, "Mix_GetMusicType");
 
   -- Set a function that is called after all mixing is performed.
-  procedure SetPostMix (func: mixer_func; data: void_ptr);
-  procedure set_post_mix (func: mixer_func; data: void_ptr) renames SetPostMix;
+  procedure SetPostMix (func: mixer_func_t; data: void_ptr_t);
+  procedure set_post_mix (func: mixer_func_t; data: void_ptr_t) renames SetPostMix;
   pragma import (c, SetPostMix, "Mix_SetPostMix");
 
   -- Add your own music player or additional mixer function.
-  procedure HookMusic (func: mixer_func; data: void_ptr);
-  procedure hook_music (func: mixer_func; data: void_ptr) renames HookMusic; 
+  procedure HookMusic (func: mixer_func_t; data: void_ptr_t);
+  procedure hook_music (func: mixer_func_t; data: void_ptr_t) renames HookMusic; 
   pragma import (c, HookMusic, "Mix_HookMusic");
 
   -- Add your own callback when the music has finished playing.
-  procedure HookMusicFinished (func: music_finished_func);
-  procedure hook_music_finished (func: music_finished_func) renames HookMusicFinished; 
+  procedure HookMusicFinished (func: music_finished_func_t);
+  procedure hook_music_finished (func: music_finished_func_t) renames HookMusicFinished; 
   pragma import (c, HookMusicFinished, "Mix_HookMusicFinished");
 
   -- Get a pointer to the user data for the current music hook.
-  function GetMusicHookData return void_ptr;
-  function get_music_hook_data return void_ptr renames GetMusicHookData;
+  function GetMusicHookData return void_ptr_t;
+  function get_music_hook_data return void_ptr_t renames GetMusicHookData;
   pragma import (c, GetMusicHookData, "Mix_GetMusicHookData");
 
   -- Add your own callback when a channel has finished playing.
-  procedure ChannelFinished (func: channel_finished_func);
-  procedure channel_finished (func: channel_finished_func) renames ChannelFinished;
+  procedure ChannelFinished (func: channel_finished_func_t);
+  procedure channel_finished (func: channel_finished_func_t) renames ChannelFinished;
   pragma import (c, ChannelFinished, "Mix_ChannelFinished");
   
   --
@@ -154,25 +154,25 @@ package SDL.mixer is
 
   channel_post: constant c.int := -2;
 
-  type effect_func is
-    access procedure (chan: c.int; stream: void_ptr; len: c.int; data: void_ptr);
-  type effect_done_func is
-    access procedure (chan: c.int; data: void_ptr);
-  pragma convention (c, effect_func);
-  pragma convention (c, effect_done_func);
+  type effect_func_t is
+    access procedure (chan: c.int; stream: void_ptr_t; len: c.int; data: void_ptr_t);
+  type effect_done_func_t is
+    access procedure (chan: c.int; data: void_ptr_t);
+  pragma convention (c, effect_func_t);
+  pragma convention (c, effect_done_func_t);
 
   -- Register a special effect function.
-  function RegisterEffect (chan: c.int; func: effect_func;
-    func_done: effect_done_func; data: void_ptr) return c.int;
-  function register_effect (chan: c.int; func: effect_func;
-    func_done: effect_done_func; data: void_ptr) return c.int renames RegisterEffect;
+  function RegisterEffect (chan: c.int; func: effect_func_t;
+    func_done: effect_done_func_t; data: void_ptr_t) return c.int;
+  function register_effect (chan: c.int; func: effect_func_t;
+    func_done: effect_done_func_t; data: void_ptr_t) return c.int renames RegisterEffect;
   pragma import (c, RegisterEffect, "Mix_RegisterEffect");
 
   -- Unregister a special effect.
-  function UnregisterEffect (chan: c.int; func: effect_func;
-    func_done: effect_done_func) return c.int;
-  function unregister_effect (chan: c.int; func: effect_func;
-    func_done: effect_done_func) return c.int renames UnregisterEffect;
+  function UnregisterEffect (chan: c.int; func: effect_func_t;
+    func_done: effect_done_func_t) return c.int;
+  function unregister_effect (chan: c.int; func: effect_func_t;
+    func_done: effect_done_func_t) return c.int renames UnregisterEffect;
   pragma import (c, UnregisterEffect, "Mix_UnregisterEffect");
 
   -- Unregister all special effects.
@@ -188,11 +188,11 @@ package SDL.mixer is
   pragma import (c, SetPanning, "Mix_SetPanning");
 
   -- Set the position of a channel.
-  subtype position_type is int16 range 0 .. 360;
+  subtype position_type_t is int16 range 0 .. 360;
 
-  function SetPosition (chan: c.int; angle: position_type; distance: uint8)
+  function SetPosition (chan: c.int; angle: position_type_t; distance: uint8)
     return c.int;
-  function set_position (chan: c.int; angle: position_type; distance: uint8)
+  function set_position (chan: c.int; angle: position_type_t; distance: uint8)
     return c.int renames SetPosition;
   pragma import (c, SetPosition, "Mix_SetPosition");
 
@@ -245,59 +245,58 @@ package SDL.mixer is
   pragma import (c, GroupNewer, "Mix_GroupNewer");
 
   -- Play an audio chunk on a specific channel.
-  function PlayChannelTimed (chan: c.int; chunk: Chunk_ptr;
+  function PlayChannelTimed (chan: c.int; chunk: chunk_ptr_t;
     loops, ticks: c.int) return c.int;
-  function play_channel_timed (chan: c.int; chunk: Chunk_ptr;
+  function play_channel_timed (chan: c.int; chunk: chunk_ptr_t;
     loops, ticks: c.int) return c.int renames PlayChannelTimed;
   pragma import (c, PlayChannelTimed, "Mix_PlayChannelTimed");
 
-  function PlayChannel (chan: c.int; chunk: Chunk_ptr; loops: c.int) return c.int;
-  function play_channel (chan: c.int; chunk: Chunk_ptr; loops: c.int) return c.int
+  function PlayChannel (chan: c.int; chunk: chunk_ptr_t; loops: c.int) return c.int;
+  function play_channel (chan: c.int; chunk: chunk_ptr_t; loops: c.int) return c.int
     renames PlayChannel;
   pragma inline (PlayChannel); 
 
-  function PlayMusic (chan: c.int; chunk: Chunk_ptr; loops: c.int) return c.int;
-  function play_music (chan: c.int; chunk: Chunk_ptr; loops: c.int) return c.int
+  function PlayMusic (chan: c.int; chunk: chunk_ptr_t; loops: c.int) return c.int;
+  function play_music (chan: c.int; chunk: chunk_ptr_t; loops: c.int) return c.int
     renames PlayMusic;
   pragma import (c, PlayMusic, "Mix_PlayMusic");
 
   -- Fade in music or a channel over "ms" milliseconds
-  function FadeInMusic (music: Music_ptr; loops, ms: c.int) return c.int;
-  function fade_in_music (music: Music_ptr; loops, ms: c.int) return c.int
+  function FadeInMusic (music: music_ptr_t; loops, ms: c.int) return c.int;
+  function fade_in_music (music: music_ptr_t; loops, ms: c.int) return c.int
     renames FadeInMusic;
   pragma import (c, FadeInMusic, "Mix_FadeInMusic");
 
-  function FadeInMusicPos (music: Music_ptr; loops, ms: c.int;
+  function FadeInMusicPos (music: music_ptr_t; loops, ms: c.int;
     position: c.double) return c.int;
-  function fade_in_music_pos (music: Music_ptr; loops, ms: c.int;
+  function fade_in_music_pos (music: music_ptr_t; loops, ms: c.int;
     position: c.double) return c.int renames FadeInMusicPos;
   pragma import (c, FadeInMusicPos, "Mix_FadeInMusicPos");
 
-  function FadeInChannel (chan: c.int; chunk: Chunk_ptr; loops, ms: c.int)
+  function FadeInChannel (chan: c.int; chunk: chunk_ptr_t; loops, ms: c.int)
     return c.int;
-  function fade_in_channel (chan: c.int; chunk: Chunk_ptr; loops, ms: c.int)
+  function fade_in_channel (chan: c.int; chunk: chunk_ptr_t; loops, ms: c.int)
     return c.int renames FadeInChannel;
   pragma inline (FadeInChannel);
 
-  function FadeInChannelTimed (chan: c.int; chunk: Chunk_ptr;
+  function FadeInChannelTimed (chan: c.int; chunk: chunk_ptr_t;
     loops, ms, ticks: c.int) return c.int;
-  function fade_in_channel_timed (chan: c.int; chunk: Chunk_ptr;
+  function fade_in_channel_timed (chan: c.int; chunk: chunk_ptr_t;
     loops, ms, ticks: c.int) return c.int renames FadeInChannelTimed;
   pragma import (c, FadeInChannelTimed, "Mix_FadeInChannelTimed"); 
 
   -- Set the volume in the range of 0-128 of a specific channel or chunk.
-  subtype volume_type is c.int range 0 .. 128;
-  function Volume (chan: c.int; volume: volume_type) return c.int;
-  function VolumeChunk (chunk: Chunk_ptr; volume: volume_type) return c.int;
-  function VolumeMusic (volume: volume_type) return c.int;
-  function volume_chunk (chunk: Chunk_ptr; volume: volume_type) return c.int
+  subtype volume_type_t is c.int range 0 .. 128;
+  function Volume (chan: c.int; volume: volume_type_t) return c.int;
+  function VolumeChunk (chunk: chunk_ptr_t; volume: volume_type_t) return c.int;
+  function VolumeMusic (volume: volume_type_t) return c.int;
+  function volume_chunk (chunk: chunk_ptr_t; volume: volume_type_t) return c.int
     renames VolumeChunk;
-  function volume_music (volume: volume_type) return c.int
+  function volume_music (volume: volume_type_t) return c.int
     renames VolumeMusic;
   pragma import (c, Volume, "Mix_Volume");
   pragma import (c, VolumeChunk, "Mix_VolumeChunk");
   pragma import (c, VolumeMusic, "Mix_VolumeMusic");
-
 
   -- Halt playing of a particular channel.
   function HaltChannel (chan: c.int) return c.int;
@@ -327,10 +326,10 @@ package SDL.mixer is
   pragma import (c, FadeOutMusic, "Mix_FadeOutMusic");
 
   -- Query the fading status of a channel
-  function FadingMusic return Fading_type;
-  function fading_music return Fading_type renames FadingMusic;
-  function FadingChannel (chan: c.int) return Fading_type;
-  function fading_channel (chan: c.int) return Fading_type renames FadingChannel;
+  function FadingMusic return fading_type_t;
+  function fading_music return fading_type_t renames FadingMusic;
+  function FadingChannel (chan: c.int) return fading_type_t;
+  function fading_channel (chan: c.int) return fading_type_t renames FadingChannel;
   pragma import (c, FadingMusic, "Mix_FadingMusic");
   pragma import (c, FadingChannel, "Mix_FadingChannel");
 
@@ -380,8 +379,8 @@ package SDL.mixer is
   pragma import (c, GetSynchroValue, "Mix_GetSynchroValue");
  
   -- Get the Mix_Chunk currently associated with a mixer channel.
-  function GetChunk (chan: c.int) return Chunk_ptr;
-  function get_chunk (chan: c.int) return Chunk_ptr renames GetChunk;
+  function GetChunk (chan: c.int) return chunk_ptr_t;
+  function get_chunk (chan: c.int) return chunk_ptr_t renames GetChunk;
   pragma import (c, GetChunk, "Mix_GetChunk");
 
   -- Close the mixer, halting all playing audio.

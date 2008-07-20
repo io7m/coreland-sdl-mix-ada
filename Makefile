@@ -266,7 +266,7 @@ cc-slib sdl-mix-ada.sld sdl-mixer.o
 	./cc-slib sdl-mix-ada sdl-mixer.o
 
 sdl-mixer.ali:\
-ada-compile sdl-mixer.adb
+ada-compile sdl-mixer.adb sdl-mixer.ads
 	./ada-compile sdl-mixer.adb
 
 sdl-mixer.o:\
