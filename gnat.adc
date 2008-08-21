@@ -1,0 +1,4 @@
+
+-- ./sdl-mixer.apk
+pragma source_file_name(sdl.mixer, spec_file_name => "sdl-mixer.ads");
+pragma source_file_name(sdl.mixer, body_file_name => "sdl-mixer.adb");

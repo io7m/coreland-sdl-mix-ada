@@ -3,11 +3,13 @@
 default: all
 
 all:\
-ctxt/bindir.o ctxt/ctxt.a ctxt/dlibdir.o ctxt/incdir.o ctxt/repos.o \
-ctxt/slibdir.o ctxt/version.o deinstaller deinstaller.o inst-check inst-check.o \
-inst-copy inst-copy.o inst-dir inst-dir.o inst-link inst-link.o install_core.o \
-install_error.o installer installer.o instchk instchk.o insthier.o \
-sdl-mix-ada-conf sdl-mix-ada-conf.o sdl-mix-ada.a sdl-mixer.ali sdl-mixer.o
+UNIT_TESTS/ada_size UNIT_TESTS/ada_size.ali UNIT_TESTS/ada_size.o \
+UNIT_TESTS/c_size UNIT_TESTS/c_size.o ctxt/bindir.o ctxt/ctxt.a ctxt/dlibdir.o \
+ctxt/incdir.o ctxt/repos.o ctxt/slibdir.o ctxt/version.o deinstaller \
+deinstaller.o inst-check inst-check.o inst-copy inst-copy.o inst-dir inst-dir.o \
+inst-link inst-link.o install_core.o install_error.o installer installer.o \
+instchk instchk.o insthier.o sdl-mix-ada-conf sdl-mix-ada-conf.o sdl-mix-ada.a \
+sdl-mixer.ali sdl-mixer.o
 
 # Mkf-deinstall
 deinstall: deinstaller inst-check inst-copy inst-dir inst-link
@@ -27,6 +29,12 @@ install-dryrun: installer inst-check inst-copy inst-dir inst-link
 install-check: instchk inst-check
 	./instchk
 
+# Mkf-test
+tests:
+	(cd UNIT_TESTS && make)
+tests_clean:
+	(cd UNIT_TESTS && make clean)
+
 # -- SYSDEPS start
 flags-sdl-ada:
 	@echo SYSDEPS sdl-ada-flags run create flags-sdl-ada 
@@ -34,6 +42,15 @@ flags-sdl-ada:
 libs-sdl-ada:
 	@echo SYSDEPS sdl-ada-libs run create libs-sdl-ada 
 	@(cd SYSDEPS/modules/sdl-ada-libs && ./run)
+flags-sdl:
+	@echo SYSDEPS sdl-flags run create flags-sdl 
+	@(cd SYSDEPS/modules/sdl-flags && ./run)
+libs-sdl:
+	@echo SYSDEPS sdl-libs run create libs-sdl 
+	@(cd SYSDEPS/modules/sdl-libs && ./run)
+libs-sdl-mixer:
+	@echo SYSDEPS sdl-mixer-libs run create libs-sdl-mixer 
+	@(cd SYSDEPS/modules/sdl-mixer-libs && ./run)
 
 
 sdl-ada-flags_clean:
@@ -42,25 +59,58 @@ sdl-ada-flags_clean:
 sdl-ada-libs_clean:
 	@echo SYSDEPS sdl-ada-libs clean libs-sdl-ada 
 	@(cd SYSDEPS/modules/sdl-ada-libs && ./clean)
+sdl-flags_clean:
+	@echo SYSDEPS sdl-flags clean flags-sdl 
+	@(cd SYSDEPS/modules/sdl-flags && ./clean)
+sdl-libs_clean:
+	@echo SYSDEPS sdl-libs clean libs-sdl 
+	@(cd SYSDEPS/modules/sdl-libs && ./clean)
+sdl-mixer-libs_clean:
+	@echo SYSDEPS sdl-mixer-libs clean libs-sdl-mixer 
+	@(cd SYSDEPS/modules/sdl-mixer-libs && ./clean)
 
 
 sysdeps_clean:\
 sdl-ada-flags_clean \
 sdl-ada-libs_clean \
+sdl-flags_clean \
+sdl-libs_clean \
+sdl-mixer-libs_clean \
 
 
 # -- SYSDEPS end
 
 
+UNIT_TESTS/ada_size:\
+ada-bind ada-link UNIT_TESTS/ada_size.ald UNIT_TESTS/ada_size.ali sdl-mixer.ali
+	./ada-bind UNIT_TESTS/ada_size.ali
+	./ada-link UNIT_TESTS/ada_size UNIT_TESTS/ada_size.ali
+
+UNIT_TESTS/ada_size.ali:\
+ada-compile UNIT_TESTS/ada_size.adb sdl-mixer.ads
+	./ada-compile UNIT_TESTS/ada_size.adb
+
+UNIT_TESTS/ada_size.o:\
+UNIT_TESTS/ada_size.ali
+
+UNIT_TESTS/c_size:\
+cc-link UNIT_TESTS/c_size.ld UNIT_TESTS/c_size.o
+	./cc-link UNIT_TESTS/c_size UNIT_TESTS/c_size.o
+
+UNIT_TESTS/c_size.o:\
+cc-compile UNIT_TESTS/c_size.c
+	./cc-compile UNIT_TESTS/c_size.c
+
 ada-bind:\
-conf-adabind conf-systype conf-adatype conf-adafflist flags-sdl-ada
+conf-adabind conf-systype conf-adatype conf-adafflist flags-sdl-ada flags-cwd
 
 ada-compile:\
 conf-adacomp conf-adatype conf-systype conf-adacflags conf-adafflist \
-	flags-sdl-ada
+	flags-sdl-ada flags-cwd
 
 ada-link:\
-conf-adalink conf-adatype conf-systype conf-aldfflist libs-sdl-ada
+conf-adalink conf-adatype conf-systype conf-aldfflist libs-sdl-ada libs-sdl \
+	libs-sdl-mixer
 
 ada-srcmap:\
 conf-adacomp conf-adatype conf-systype
@@ -69,10 +119,10 @@ ada-srcmap-all:\
 ada-srcmap conf-adacomp conf-adatype conf-systype
 
 cc-compile:\
-conf-cc conf-cctype conf-systype
+conf-cc conf-cctype conf-systype conf-cflags conf-ccfflist flags-sdl
 
 cc-link:\
-conf-ld conf-ldtype conf-systype
+conf-ld conf-ldtype conf-systype conf-ldflags
 
 cc-slib:\
 conf-systype
@@ -272,16 +322,17 @@ ada-compile sdl-mixer.adb sdl-mixer.ads
 sdl-mixer.o:\
 sdl-mixer.ali
 
-clean-all: sysdeps_clean obj_clean ext_clean
+clean-all: sysdeps_clean tests_clean obj_clean ext_clean
 clean: obj_clean
 obj_clean:
-	rm -f ctxt/bindir.c ctxt/bindir.o ctxt/ctxt.a ctxt/dlibdir.c ctxt/dlibdir.o \
-	ctxt/incdir.c ctxt/incdir.o ctxt/repos.c ctxt/repos.o ctxt/slibdir.c \
-	ctxt/slibdir.o ctxt/version.c ctxt/version.o deinstaller deinstaller.o \
-	inst-check inst-check.o inst-copy inst-copy.o inst-dir inst-dir.o inst-link \
-	inst-link.o install_core.o install_error.o installer installer.o instchk \
-	instchk.o insthier.o sdl-mix-ada-conf sdl-mix-ada-conf.o sdl-mix-ada.a \
-	sdl-mixer.ali sdl-mixer.o
+	rm -f UNIT_TESTS/ada_size UNIT_TESTS/ada_size.ali UNIT_TESTS/ada_size.o \
+	UNIT_TESTS/c_size UNIT_TESTS/c_size.o ctxt/bindir.c ctxt/bindir.o ctxt/ctxt.a \
+	ctxt/dlibdir.c ctxt/dlibdir.o ctxt/incdir.c ctxt/incdir.o ctxt/repos.c \
+	ctxt/repos.o ctxt/slibdir.c ctxt/slibdir.o ctxt/version.c ctxt/version.o \
+	deinstaller deinstaller.o inst-check inst-check.o inst-copy inst-copy.o \
+	inst-dir inst-dir.o inst-link inst-link.o install_core.o install_error.o \
+	installer installer.o instchk instchk.o insthier.o sdl-mix-ada-conf \
+	sdl-mix-ada-conf.o sdl-mix-ada.a sdl-mixer.ali sdl-mixer.o
 ext_clean:
 	rm -f conf-adatype conf-cctype conf-ldtype conf-sosuffix conf-systype mk-ctxt
 

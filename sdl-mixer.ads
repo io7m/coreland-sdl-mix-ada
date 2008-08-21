@@ -26,6 +26,9 @@ package SDL.mixer is
          abuf: uint8_ptr;
          alen: uint32;
        volume: uint8;
+      unused1: uint8; -- XXX: C compiler padding
+      unused2: uint8; -- XXX: C compiler padding
+      unused3: uint8; -- XXX: C compiler padding
   end record;
   type chunk_ptr_t is access all chunk_t;
   pragma convention (c, chunk_t);
@@ -42,6 +45,7 @@ package SDL.mixer is
     FADING_OUT => 1,
     FADING_IN => 2
   );
+  for fading_type_t'size use c.unsigned'size;
   pragma convention (c, fading_type_t);
 
   -- Type of music
@@ -65,6 +69,7 @@ package SDL.mixer is
     MUSIC_MP3 => 6,
     MUSIC_MP3_MAD => 7
   );
+  for music_type_t'size use c.unsigned'size;
   pragma convention (c, music_type_t);
 
   -- The internal format for a music chunk interpreted via mikmod.
@@ -78,9 +83,9 @@ package SDL.mixer is
   --
 
   -- Open the mixer with a certain audio format.
-  function OpenAudio (freq: c.int; format: au.audio_format_t;
+  function OpenAudio (freq: c.int; format: au.format_t;
     channels, chunksize: c.int) return c.int;
-  function open_audio (freq: c.int; format: au.audio_format_t;
+  function open_audio (freq: c.int; format: au.format_t;
     channels, chunksize: c.int) return c.int;
   pragma import (c, OpenAudio, "Mix_OpenAudio");
   pragma import (c, open_audio, "Mix_OpenAudio");
@@ -92,9 +97,9 @@ package SDL.mixer is
   pragma import (c, allocate_channels, "Mix_AllocateChannels");
 
   -- Find out what the actual audio device parameters are.
-  function QuerySpec (freq: access c.int; format: access au.audio_format_t;
+  function QuerySpec (freq: access c.int; format: access au.format_t;
     channels: access c.int) return c.int;
-  function query_spec (freq: access c.int; format: access au.audio_format_t;
+  function query_spec (freq: access c.int; format: access au.format_t;
     channels: access c.int) return c.int;
   pragma import (c, QuerySpec, "Mix_QuerySpec");
   pragma import (c, query_spec, "Mix_QuerySpec");
