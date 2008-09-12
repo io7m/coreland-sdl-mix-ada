@@ -3,6 +3,6 @@ sdl.mixer.chunk_t:struct Mix_Chunk
 sdl.mixer.effect_done_func_t:Mix_EffectDone_t
 sdl.mixer.effect_func_t:Mix_EffectFunc_t
 sdl.mixer.fading_type_t:Mix_Fading
-sdl.mixer.music_ptr_t:Mix_Music *
+sdl.mixer.music_access_t:Mix_Music *
 sdl.mixer.music_t:Mix_Music *
 sdl.mixer.music_type_t:Mix_MusicType

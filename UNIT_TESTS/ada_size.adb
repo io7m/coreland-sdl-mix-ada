@@ -13,7 +13,7 @@ procedure ada_size is
   sdl_mixer_effect_done_func_t : aliased string := "sdl.mixer.effect_done_func_t";
   sdl_mixer_effect_func_t : aliased string := "sdl.mixer.effect_func_t";
   sdl_mixer_fading_type_t : aliased string := "sdl.mixer.fading_type_t";
-  sdl_mixer_music_ptr_t : aliased string := "sdl.mixer.music_ptr_t";
+  sdl_mixer_music_access_t : aliased string := "sdl.mixer.music_access_t";
   sdl_mixer_music_t : aliased string := "sdl.mixer.music_t";
   sdl_mixer_music_type_t : aliased string := "sdl.mixer.music_type_t";
 
@@ -28,7 +28,7 @@ procedure ada_size is
     (sdl_mixer_effect_done_func_t'access, sdl.mixer.effect_done_func_t'size),
     (sdl_mixer_effect_func_t'access, sdl.mixer.effect_func_t'size),
     (sdl_mixer_fading_type_t'access, sdl.mixer.fading_type_t'size),
-    (sdl_mixer_music_ptr_t'access, sdl.mixer.music_ptr_t'size),
+    (sdl_mixer_music_access_t'access, sdl.mixer.music_access_t'size),
     (sdl_mixer_music_t'access, sdl.mixer.music_t'size),
     (sdl_mixer_music_type_t'access, sdl.mixer.music_type_t'size)
   );
