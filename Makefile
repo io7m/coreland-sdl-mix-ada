@@ -39,8 +39,8 @@ flags-sdl-ada:
 	@echo SYSDEPS sdl-ada-flags run create flags-sdl-ada 
 	@(cd SYSDEPS/modules/sdl-ada-flags && ./run)
 libs-sdl-ada:
-	@echo SYSDEPS sdl-ada-libs run create libs-sdl-ada 
-	@(cd SYSDEPS/modules/sdl-ada-libs && ./run)
+	@echo SYSDEPS sdl-ada-libs-S run create libs-sdl-ada 
+	@(cd SYSDEPS/modules/sdl-ada-libs-S && ./run)
 flags-sdl:
 	@echo SYSDEPS sdl-flags run create flags-sdl 
 	@(cd SYSDEPS/modules/sdl-flags && ./run)
@@ -55,9 +55,9 @@ libs-sdl-mixer:
 sdl-ada-flags_clean:
 	@echo SYSDEPS sdl-ada-flags clean flags-sdl-ada 
 	@(cd SYSDEPS/modules/sdl-ada-flags && ./clean)
-sdl-ada-libs_clean:
-	@echo SYSDEPS sdl-ada-libs clean libs-sdl-ada 
-	@(cd SYSDEPS/modules/sdl-ada-libs && ./clean)
+sdl-ada-libs-S_clean:
+	@echo SYSDEPS sdl-ada-libs-S clean libs-sdl-ada 
+	@(cd SYSDEPS/modules/sdl-ada-libs-S && ./clean)
 sdl-flags_clean:
 	@echo SYSDEPS sdl-flags clean flags-sdl 
 	@(cd SYSDEPS/modules/sdl-flags && ./clean)
@@ -71,7 +71,7 @@ sdl-mixer-libs_clean:
 
 sysdeps_clean:\
 sdl-ada-flags_clean \
-sdl-ada-libs_clean \
+sdl-ada-libs-S_clean \
 sdl-flags_clean \
 sdl-libs_clean \
 sdl-mixer-libs_clean \
