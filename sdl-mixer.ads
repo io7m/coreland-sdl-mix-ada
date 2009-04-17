@@ -1,512 +1,489 @@
-with SDL.audio;
-with SDL.error;
-with SDL.rwops;
-with interfaces.c.strings;
-with interfaces.c;
+with Sdl.Audio;
+with Sdl.Error;
+with Sdl.Rwops;
+with Interfaces.C.Strings;
+with Interfaces.C;
 
-package SDL.mixer is
-  package au renames SDL.audio;
-  package rw renames SDL.rwops;
-  package c renames interfaces.c;
-  package cs renames interfaces.c.strings;
+package Sdl.Mixer is
+  package C renames Interfaces.C;
+  package Cs renames Interfaces.C.Strings;
 
-  use type c.int;
+  use type C.int;
 
-  type mixer_func_t is access procedure
-    (udata  : void_ptr_t;
-     stream : uint8_ptr_t;
-     length : c.int);
-  pragma convention (c, mixer_func_t);
+  type Mixer_Func_t is access procedure (User_Data : Void_Ptr_t; Stream : Uint8_Ptr_t; Length : C.int);
+  pragma Convention (C, Mixer_Func_t);
 
-  type music_finished_func_t is access procedure;
-  pragma convention (c, music_finished_func_t);
+  type Music_Finished_Func_t is access procedure;
+  pragma Convention (C, Music_Finished_Func_t);
 
-  type channel_finished_func_t is access procedure (channel : c.int);
-  pragma convention (c, channel_finished_func_t);
+  type Channel_Finished_Func_t is access procedure (Channel : C.int);
+  pragma Convention (C, Channel_Finished_Func_t);
 
   -- The internal format for an audio chunk.
-  type chunk_t is record
-    allocated : c.int;
-    abuf      : uint8_ptr_t;
-    alen      : uint32_t;
-    volume    : uint8_t;
-    unused1   : uint8_t; -- XXX: C compiler padding
-    unused2   : uint8_t; -- XXX: C compiler padding
-    unused3   : uint8_t; -- XXX: C compiler padding
+  type Chunk_t is record
+    Allocated : C.int;
+    Abuf      : Uint8_Ptr_t;
+    Alen      : Uint32_t;
+    Volume    : Uint8_t;
+    Unused1   : Uint8_t; -- XXX: C compiler padding
+    Unused2   : Uint8_t; -- XXX: C compiler padding
+    Unused3   : Uint8_t; -- XXX: C compiler padding
   end record;
-  type chunk_access_t is access all chunk_t;
-  pragma convention (c, chunk_t);
-  pragma convention (c, chunk_access_t);
+  type Chunk_Access_t is access all Chunk_t;
+  pragma Convention (C, Chunk_t);
+  pragma Convention (C, Chunk_Access_t);
 
   -- The different fading types supported.
-  type fading_type_t is (
-    NO_FADING,
-    FADING_OUT,
-    FADING_IN
-  );
-  for fading_type_t use (
-    NO_FADING  => 0,
-    FADING_OUT => 1,
-    FADING_IN  => 2
-  );
-  for fading_type_t'size use c.unsigned'size;
-  pragma convention (c, fading_type_t);
+  type Fading_Type_t is (No_Fading, Fading_Out, Fading_In);
+  for Fading_Type_t use (No_Fading => 0, Fading_Out => 1, Fading_In => 2);
+  for Fading_Type_t'Size use C.unsigned'Size;
+  pragma Convention (C, Fading_Type_t);
 
   -- Type of music
-  type music_type_t is (
-    MUSIC_NONE,
-    MUSIC_CMD,
-    MUSIC_WAV,
-    MUSIC_MOD,
-    MUSIC_MID,
-    MUSIC_OGG,
-    MUSIC_MP3,
-    MUSIC_MP3_MAD
-  );
-  for music_type_t use (
-    MUSIC_NONE => 0,
-    MUSIC_CMD => 1,
-    MUSIC_WAV => 2,
-    MUSIC_MOD => 3,
-    MUSIC_MID => 4,
-    MUSIC_OGG => 5,
-    MUSIC_MP3 => 6,
-    MUSIC_MP3_MAD => 7
-  );
-  for music_type_t'size use c.unsigned'size;
-  pragma convention (c, music_type_t);
+  type Music_Type_t is (
+    Music_None,
+    Music_Cmd,
+    Music_WAV,
+    Music_Mod,
+    Music_Mid,
+    Music_Ogg,
+    Music_MP3,
+    Music_MP3_Mad);
+  for Music_Type_t use
+   (Music_None    => 0,
+    Music_Cmd     => 1,
+    Music_WAV     => 2,
+    Music_Mod     => 3,
+    Music_Mid     => 4,
+    Music_Ogg     => 5,
+    Music_MP3     => 6,
+    Music_MP3_Mad => 7);
+  for Music_Type_t'Size use C.unsigned'Size;
+  pragma Convention (C, Music_Type_t);
 
   -- The internal format for a music chunk interpreted via mikmod.
-  type music_t is new void_ptr_t;
-  type music_access_t is access all void_ptr_t;
-  pragma convention (c, music_t);
-  pragma convention (c, music_access_t);
+  type Music_t is new Void_Ptr_t;
+  type Music_Access_t is access all Void_Ptr_t;
+  pragma Convention (C, Music_t);
+  pragma Convention (C, Music_Access_t);
 
   --
   -- API functions.
   --
 
-  -- Open the mixer with a certain audio format.
+-- Open the mixer with a certain audio format.
   function OpenAudio
-   (freq      : c.int;
-    format    : au.format_t;
-    channels  : c.int;
-    chunksize : c.int) return c.int;
-  function open_audio
-   (freq      : c.int;
-    format    : au.format_t;
-    channels  : c.int;
-    chunksize : c.int) return c.int renames OpenAudio;
-  pragma import (c, OpenAudio, "Mix_OpenAudio");
+   (Freq      : C.int;
+    Format    : Audio.Format_t;
+    Channels  : C.int;
+    Chunksize : C.int)
+    return      C.int;
+  function Open_Audio
+   (Freq      : C.int;
+    Format    : Audio.Format_t;
+    Channels  : C.int;
+    Chunksize : C.int)
+    return      C.int renames OpenAudio;
+  pragma Import (C, OpenAudio, "Mix_OpenAudio");
 
   -- Dynamically change the number of channels managed by the mixer.
-  function AllocateChannels (chans: c.int) return c.int;
-  function allocate_channels (chans: c.int) return c.int renames AllocateChannels;
-  pragma import (c, AllocateChannels, "Mix_AllocateChannels");
+  function AllocateChannels (Channels : C.int) return C.int;
+  function Allocate_Channels (Channels : C.int) return C.int renames AllocateChannels;
+  pragma Import (C, AllocateChannels, "Mix_AllocateChannels");
 
   -- Find out what the actual audio device parameters are.
   function QuerySpec
-   (freq     : access c.int;
-    format   : access au.format_t;
-    channels : access c.int) return c.int;
-  function query_spec
-   (freq     : access c.int;
-    format   : access au.format_t;
-    channels : access c.int) return c.int renames QuerySpec;
-  pragma import (c, QuerySpec, "Mix_QuerySpec");
+   (Freq     : access C.int;
+    Format   : access Audio.Format_t;
+    Channels : access C.int)
+    return     C.int;
+  function Query_Spec
+   (Freq     : access C.int;
+    Format   : access Audio.Format_t;
+    Channels : access C.int)
+    return     C.int renames QuerySpec;
+  pragma Import (C, QuerySpec, "Mix_QuerySpec");
 
   -- Load a wave file or a music (.mod .s3m .it .xm)
-  function LoadWAV_RW
-   (src     : rw.rwops_access_t;
-    freesrc : c.int) return chunk_access_t;
-  function load_wav_rw
-   (src     : rw.rwops_access_t;
-    freesrc : c.int) return chunk_access_t renames LoadWAV_RW;
-  pragma import (c, LoadWAV_RW, "Mix_LoadWAV_RW");
+  function LoadWAV_RW (Src : Rwops.Rwops_Access_t; Freesrc : C.int) return Chunk_Access_t;
+  function Load_WAV_RW (Src : Rwops.Rwops_Access_t; Freesrc : C.int) return Chunk_Access_t renames LoadWAV_RW;
+  pragma Import (C, LoadWAV_RW, "Mix_LoadWAV_RW");
 
-  function LoadWAV (file : string) return chunk_access_t;
-  function load_wav (file : string) return chunk_access_t renames LoadWAV;
-  pragma import (c, LoadWAV, "Mix_LoadWAV_RW");
+  function LoadWAV (File : String) return Chunk_Access_t;
+  function Load_WAV (File : String) return Chunk_Access_t renames LoadWAV;
+  pragma Import (C, LoadWAV, "Mix_LoadWAV_RW");
 
   -- Free an audio chunk previously loaded.
-  procedure FreeChunk (cptr : chunk_access_t);
-  procedure free_chunk (cptr : chunk_access_t) renames FreeChunk;
-  pragma import (c, FreeChunk, "Mix_FreeChunk");
+  procedure FreeChunk (Chunk : Chunk_Access_t);
+  procedure Free_Chunk (Chunk : Chunk_Access_t) renames FreeChunk;
+  pragma Import (C, FreeChunk, "Mix_FreeChunk");
 
-  procedure FreeMusic (cptr : music_access_t);
-  procedure free_music (cptr : music_access_t) renames FreeMusic;
-  pragma import (c, FreeMusic, "Mix_FreeMusic");
+  procedure FreeMusic (Chunk : Music_Access_t);
+  procedure Free_Music (Chunk : Music_Access_t) renames FreeMusic;
+  pragma Import (C, FreeMusic, "Mix_FreeMusic");
 
   -- Find out the music format of a mixer music.
-  function GetMusicType (mus : music_access_t) return music_type_t;
-  function get_music_type (mus : music_access_t) return music_type_t renames GetMusicType;
-  pragma import (c, GetMusicType, "Mix_GetMusicType");
+  function GetMusicType (Music : Music_Access_t) return Music_Type_t;
+  function Get_Music_Type (Music : Music_Access_t) return Music_Type_t renames GetMusicType;
+  pragma Import (C, GetMusicType, "Mix_GetMusicType");
 
   -- Set a function that is called after all mixing is performed.
-  procedure SetPostMix (func : mixer_func_t; data: void_ptr_t);
-  procedure set_post_mix (func : mixer_func_t; data: void_ptr_t) renames SetPostMix;
-  pragma import (c, SetPostMix, "Mix_SetPostMix");
+  procedure SetPostMix (Func : Mixer_Func_t; Data : Void_Ptr_t);
+  procedure Set_Post_Mix (Func : Mixer_Func_t; Data : Void_Ptr_t) renames SetPostMix;
+  pragma Import (C, SetPostMix, "Mix_SetPostMix");
 
   -- Add your own music player or additional mixer function.
-  procedure HookMusic (func : mixer_func_t; data: void_ptr_t);
-  procedure hook_music (func : mixer_func_t; data: void_ptr_t) renames HookMusic; 
-  pragma import (c, HookMusic, "Mix_HookMusic");
+  procedure HookMusic (Func : Mixer_Func_t; Data : Void_Ptr_t);
+  procedure Hook_Music (Func : Mixer_Func_t; Data : Void_Ptr_t) renames HookMusic;
+  pragma Import (C, HookMusic, "Mix_HookMusic");
 
   -- Add your own callback when the music has finished playing.
-  procedure HookMusicFinished (func : music_finished_func_t);
-  procedure hook_music_finished (func : music_finished_func_t) renames HookMusicFinished; 
-  pragma import (c, HookMusicFinished, "Mix_HookMusicFinished");
+  procedure HookMusicFinished (Func : Music_Finished_Func_t);
+  procedure Hook_Music_Finished (Func : Music_Finished_Func_t) renames HookMusicFinished;
+  pragma Import (C, HookMusicFinished, "Mix_HookMusicFinished");
 
   -- Get a pointer to the user data for the current music hook.
-  function GetMusicHookData return void_ptr_t;
-  function get_music_hook_data return void_ptr_t renames GetMusicHookData;
-  pragma import (c, GetMusicHookData, "Mix_GetMusicHookData");
+  function GetMusicHookData return Void_Ptr_t;
+  function Get_Music_Hook_Data return Void_Ptr_t renames GetMusicHookData;
+  pragma Import (C, GetMusicHookData, "Mix_GetMusicHookData");
 
   -- Add your own callback when a channel has finished playing.
-  procedure ChannelFinished (func : channel_finished_func_t);
-  procedure channel_finished (func : channel_finished_func_t) renames ChannelFinished;
-  pragma import (c, ChannelFinished, "Mix_ChannelFinished");
-  
+  procedure ChannelFinished (Func : Channel_Finished_Func_t);
+  procedure Channel_Finished (Func : Channel_Finished_Func_t) renames ChannelFinished;
+  pragma Import (C, ChannelFinished, "Mix_ChannelFinished");
+
   --
   -- Effects API.
   --
 
-  channel_post: constant c.int := -2;
+  Channel_Post : constant C.int := -2;
 
-  type effect_func_t is access procedure
-   (chan   : c.int;
-    stream : void_ptr_t;
-    length : c.int;
-    data   : void_ptr_t);
-  type effect_done_func_t is access procedure
-   (chan : c.int;
-    data : void_ptr_t);
-  pragma convention (c, effect_func_t);
-  pragma convention (c, effect_done_func_t);
+  type Effect_Func_t is access procedure
+    (Channel : C.int;
+     Stream  : Void_Ptr_t;
+     Length  : C.int;
+     Data    : Void_Ptr_t);
+  type Effect_Done_Func_t is access procedure (Channel : C.int; Data : Void_Ptr_t);
+  pragma Convention (C, Effect_Func_t);
+  pragma Convention (C, Effect_Done_Func_t);
 
   -- Register a special effect function.
   function RegisterEffect
-   (chan      : c.int;
-    func      : effect_func_t;
-    func_done : effect_done_func_t;
-    data      : void_ptr_t) return c.int;
-  function register_effect
-   (chan      : c.int;
-    func      : effect_func_t;
-    func_done : effect_done_func_t;
-    data      : void_ptr_t) return c.int renames RegisterEffect;
-  pragma import (c, RegisterEffect, "Mix_RegisterEffect");
+   (Channel   : C.int;
+    Func      : Effect_Func_t;
+    Func_Done : Effect_Done_Func_t;
+    Data      : Void_Ptr_t)
+    return      C.int;
+  function Register_Effect
+   (Channel   : C.int;
+    Func      : Effect_Func_t;
+    Func_Done : Effect_Done_Func_t;
+    Data      : Void_Ptr_t)
+    return      C.int renames RegisterEffect;
+  pragma Import (C, RegisterEffect, "Mix_RegisterEffect");
 
   -- Unregister a special effect.
   function UnregisterEffect
-   (chan      : c.int;
-    func      : effect_func_t;
-    func_done : effect_done_func_t) return c.int;
-  function unregister_effect
-   (chan      : c.int;
-    func      : effect_func_t;
-    func_done : effect_done_func_t) return c.int renames UnregisterEffect;
-  pragma import (c, UnregisterEffect, "Mix_UnregisterEffect");
+   (Channel   : C.int;
+    Func      : Effect_Func_t;
+    Func_Done : Effect_Done_Func_t)
+    return      C.int;
+  function Unregister_Effect
+   (Channel   : C.int;
+    Func      : Effect_Func_t;
+    Func_Done : Effect_Done_Func_t)
+    return      C.int renames UnregisterEffect;
+  pragma Import (C, UnregisterEffect, "Mix_UnregisterEffect");
 
   -- Unregister all special effects.
-  function UnregisterAllEffects (chan: c.int) return c.int;
-  function unregister_all_effects (chan: c.int) return c.int renames UnregisterAllEffects;
-  pragma import (c, UnregisterAllEffects, "Mix_UnregisterAllEffects");
+  function UnregisterAllEffects (Channel : C.int) return C.int;
+  function Unregister_All_Effects (Channel : C.int) return C.int renames UnregisterAllEffects;
+  pragma Import (C, UnregisterAllEffects, "Mix_UnregisterAllEffects");
 
   -- Set the panning of a channel.
   function SetPanning
-   (chan  : c.int;
-    left  : uint8_t;
-    right : uint8_t) return c.int;
-  function set_panning
-   (chan  : c.int;
-    left  : uint8_t;
-    right : uint8_t) return c.int renames SetPanning;
-  pragma import (c, SetPanning, "Mix_SetPanning");
+   (Channel : C.int;
+    Left    : Uint8_t;
+    Right   : Uint8_t)
+    return  C.int;
+  function Set_Panning
+   (Channel : C.int;
+    Left    : Uint8_t;
+    Right   : Uint8_t)
+    return  C.int renames SetPanning;
+  pragma Import (C, SetPanning, "Mix_SetPanning");
 
   -- Set the position of a channel.
-  subtype position_type_t is int16_t range 0 .. 360;
+  subtype Position_Type_t is Int16_t range 0 .. 360;
 
   function SetPosition
-   (chan     : c.int;
-    angle    : position_type_t;
-    distance : uint8_t) return c.int;
-  function set_position
-   (chan     : c.int;
-    angle    : position_type_t;
-    distance : uint8_t) return c.int renames SetPosition;
-  pragma import (c, SetPosition, "Mix_SetPosition");
+   (Channel  : C.int;
+    Angle    : Position_Type_t;
+    Distance : Uint8_t)
+    return     C.int;
+  function Set_Position
+   (Channel  : C.int;
+    Angle    : Position_Type_t;
+    Distance : Uint8_t)
+    return     C.int renames SetPosition;
+  pragma Import (C, SetPosition, "Mix_SetPosition");
 
   -- Set the "distance" of a channel.
-  function SetDistance
-   (chan     : c.int;
-    distance : uint8_t) return c.int;
-  function set_distance
-   (chan     : c.int;
-    distance : uint8_t) return c.int renames SetDistance;
-  pragma import (c, SetDistance, "Mix_SetDistance");
+  function SetDistance (Channel : C.int; Distance : Uint8_t) return C.int;
+  function Set_Distance (Channel : C.int; Distance : Uint8_t) return C.int renames SetDistance;
+  pragma Import (C, SetDistance, "Mix_SetDistance");
 
   -- Causes a channel to reverse its stereo.
-  function SetReverseStereo
-   (chan     : c.int;
-    distance : uint8_t) return c.int;
-  function set_reverse_stereo
-   (chan     : c.int;
-    distance : uint8_t) return c.int renames SetReverseStereo;
-  pragma import (c, SetReverseStereo, "Mix_SetReverseStereo");
+  function SetReverseStereo (Channel : C.int; Distance : Uint8_t) return C.int;
+  function Set_Reverse_Stereo (Channel : C.int; Distance : Uint8_t) return C.int renames SetReverseStereo;
+  pragma Import (C, SetReverseStereo, "Mix_SetReverseStereo");
 
   -- Reserve the first channels (0 -> n-1) for the application.
-  function ReserveChannels (num : c.int) return c.int;
-  function reserve_channels (num : c.int) return c.int renames ReserveChannels;
-  pragma import (c, ReserveChannels, "Mix_ReverseChannels");
+  function ReserveChannels (Num : C.int) return C.int;
+  function Reserve_Channels (Num : C.int) return C.int renames ReserveChannels;
+  pragma Import (C, ReserveChannels, "Mix_ReverseChannels");
 
   -- Attach a tag to a channel.
-  function GroupChannel
-   (which : c.int;
-    tag   : c.int) return c.int;
-  function group_channel
-   (which : c.int;
-    tag   : c.int) return c.int renames GroupChannel;
-  pragma import (c, GroupChannel, "Mix_GroupChannel");
+  function GroupChannel (Which : C.int; Tag : C.int) return C.int;
+  function Group_Channel (Which : C.int; Tag : C.int) return C.int renames GroupChannel;
+  pragma Import (C, GroupChannel, "Mix_GroupChannel");
 
   -- Assign several consecutive channels to a group.
   function GroupChannels
-   (from : c.int;
-    to   : c.int;
-    tag  : c.int) return c.int;
-  function group_channels
-   (from : c.int;
-    to   : c.int;
-    tag  : c.int) return c.int renames GroupChannels;
-  pragma import (c, GroupChannels, "Mix_GroupChannels");
+   (From : C.int;
+    To   : C.int;
+    Tag  : C.int)
+    return C.int;
+  function Group_Channels
+   (From : C.int;
+    To   : C.int;
+    Tag  : C.int)
+    return C.int renames GroupChannels;
+  pragma Import (C, GroupChannels, "Mix_GroupChannels");
 
   -- Finds the first available channel in a group of channels.
-  function GroupAvailable (tag : c.int) return c.int;
-  function group_available (tag : c.int) return c.int renames GroupAvailable;
-  pragma import (c, GroupAvailable, "Mix_GroupAvailable");
+  function GroupAvailable (Tag : C.int) return C.int;
+  function Group_Available (Tag : C.int) return C.int renames GroupAvailable;
+  pragma Import (C, GroupAvailable, "Mix_GroupAvailable");
 
   -- Returns the number of channels in a group.
-  function GroupCount (tag : c.int) return c.int;
-  function group_count (tag : c.int) return c.int renames GroupCount;
-  pragma import (c, GroupCount, "Mix_GroupCount");
+  function GroupCount (Tag : C.int) return C.int;
+  function Group_Count (Tag : C.int) return C.int renames GroupCount;
+  pragma Import (C, GroupCount, "Mix_GroupCount");
 
   -- Finds the "oldest" sample playing in a group of channels.
-  function GroupOldest (tag : c.int) return c.int;
-  function group_oldest (tag : c.int) return c.int renames GroupOldest;
-  pragma import (c, GroupOldest, "Mix_GroupOldest");
+  function GroupOldest (Tag : C.int) return C.int;
+  function Group_Oldest (Tag : C.int) return C.int renames GroupOldest;
+  pragma Import (C, GroupOldest, "Mix_GroupOldest");
 
   -- Finds the "most recent" (i.e. last) sample playing in a group of channels.
-  function GroupNewer (tag : c.int) return c.int;
-  function group_newer (tag : c.int) return c.int renames GroupNewer;
-  pragma import (c, GroupNewer, "Mix_GroupNewer");
+  function GroupNewer (Tag : C.int) return C.int;
+  function Group_Newer (Tag : C.int) return C.int renames GroupNewer;
+  pragma Import (C, GroupNewer, "Mix_GroupNewer");
 
   -- Play an audio chunk on a specific channel.
   function PlayChannelTimed
-   (chan  : c.int;
-    chunk : chunk_access_t;
-    loops : c.int;
-    ticks : c.int) return c.int;
-  function play_channel_timed
-   (chan  : c.int;
-    chunk : chunk_access_t;
-    loops : c.int;
-    ticks : c.int) return c.int renames PlayChannelTimed;
-  pragma import (c, PlayChannelTimed, "Mix_PlayChannelTimed");
+   (Channel : C.int;
+    Chunk   : Chunk_Access_t;
+    Loops   : C.int;
+    Ticks   : C.int)
+    return  C.int;
+  function Play_Channel_Timed
+   (Channel : C.int;
+    Chunk   : Chunk_Access_t;
+    Loops   : C.int;
+    Ticks   : C.int)
+    return  C.int renames PlayChannelTimed;
+  pragma Import (C, PlayChannelTimed, "Mix_PlayChannelTimed");
 
   function PlayChannel
-   (chan  : c.int;
-    chunk : chunk_access_t;
-    loops : c.int) return c.int;
-  function play_channel
-   (chan  : c.int;
-    chunk : chunk_access_t;
-    loops : c.int) return c.int renames PlayChannel;
-  pragma inline (PlayChannel); 
+   (Channel : C.int;
+    Chunk   : Chunk_Access_t;
+    Loops   : C.int)
+    return  C.int;
+  function Play_Channel
+   (Channel : C.int;
+    Chunk   : Chunk_Access_t;
+    Loops   : C.int)
+    return  C.int renames PlayChannel;
+  pragma Inline (PlayChannel);
 
   function PlayMusic
-   (chan  : c.int;
-    chunk : chunk_access_t;
-    loops : c.int) return c.int;
-  function play_music
-   (chan  : c.int;
-    chunk : chunk_access_t;
-    loops : c.int) return c.int renames PlayMusic;
-  pragma import (c, PlayMusic, "Mix_PlayMusic");
+   (Channel : C.int;
+    Chunk   : Chunk_Access_t;
+    Loops   : C.int)
+    return  C.int;
+  function Play_Music
+   (Channel : C.int;
+    Chunk   : Chunk_Access_t;
+    Loops   : C.int)
+    return  C.int renames PlayMusic;
+  pragma Import (C, PlayMusic, "Mix_PlayMusic");
 
   -- Fade in music or a channel over "ms" milliseconds
   function FadeInMusic
-   (music : music_access_t;
-    loops : c.int;
-    ms    : c.int) return c.int;
-  function fade_in_music
-   (music : music_access_t;
-    loops : c.int;
-    ms    : c.int) return c.int renames FadeInMusic;
-  pragma import (c, FadeInMusic, "Mix_FadeInMusic");
+   (Music : Music_Access_t;
+    Loops : C.int;
+    Ms    : C.int)
+    return  C.int;
+  function Fade_In_Music
+   (Music : Music_Access_t;
+    Loops : C.int;
+    Ms    : C.int)
+    return  C.int renames FadeInMusic;
+  pragma Import (C, FadeInMusic, "Mix_FadeInMusic");
 
   function FadeInMusicPos
-   (music    : music_access_t;
-    loops    : c.int;
-    ms       : c.int;
-    position : c.double) return c.int;
-  function fade_in_music_pos
-   (music    : music_access_t;
-    loops    : c.int;
-    ms       : c.int;
-    position : c.double) return c.int renames FadeInMusicPos;
-  pragma import (c, FadeInMusicPos, "Mix_FadeInMusicPos");
+   (Music    : Music_Access_t;
+    Loops    : C.int;
+    Ms       : C.int;
+    Position : C.double)
+    return     C.int;
+  function Fade_In_Music_Pos
+   (Music    : Music_Access_t;
+    Loops    : C.int;
+    Ms       : C.int;
+    Position : C.double)
+    return     C.int renames FadeInMusicPos;
+  pragma Import (C, FadeInMusicPos, "Mix_FadeInMusicPos");
 
   function FadeInChannel
-   (chan  : c.int;
-    chunk : chunk_access_t;
-    loops : c.int;
-    ms    : c.int) return c.int;
-  function fade_in_channel
-   (chan  : c.int;
-    chunk : chunk_access_t;
-    loops : c.int;
-    ms    : c.int) return c.int renames FadeInChannel;
-  pragma inline (FadeInChannel);
+   (Channel : C.int;
+    Chunk   : Chunk_Access_t;
+    Loops   : C.int;
+    Ms      : C.int)
+    return  C.int;
+  function Fade_In_Channel
+   (Channel : C.int;
+    Chunk   : Chunk_Access_t;
+    Loops   : C.int;
+    Ms      : C.int)
+    return  C.int renames FadeInChannel;
+  pragma Inline (FadeInChannel);
 
   function FadeInChannelTimed
-   (chan  : c.int;
-    chunk : chunk_access_t;
-    loops : c.int;
-    ms    : c.int;
-    ticks : c.int) return c.int;
-  function fade_in_channel_timed
-   (chan  : c.int;
-    chunk : chunk_access_t;
-    loops : c.int;
-    ms    : c.int;
-    ticks : c.int) return c.int renames FadeInChannelTimed;
-  pragma import (c, FadeInChannelTimed, "Mix_FadeInChannelTimed"); 
+   (Channel : C.int;
+    Chunk   : Chunk_Access_t;
+    Loops   : C.int;
+    Ms      : C.int;
+    Ticks   : C.int)
+    return  C.int;
+  function Fade_In_Channel_Timed
+   (Channel : C.int;
+    Chunk   : Chunk_Access_t;
+    Loops   : C.int;
+    Ms      : C.int;
+    Ticks   : C.int)
+    return  C.int renames FadeInChannelTimed;
+  pragma Import (C, FadeInChannelTimed, "Mix_FadeInChannelTimed");
 
   -- Set the volume in the range of 0-128 of a specific channel or chunk.
-  subtype volume_type_t is c.int range 0 .. 128;
+  subtype Volume_Type_t is C.int range 0 .. 128;
 
-  function Volume
-   (chan   : c.int;
-    volume : volume_type_t) return c.int;
-  pragma import (c, Volume, "Mix_Volume");
+  function Volume (Channel : C.int; Volume : Volume_Type_t) return C.int;
+  pragma Import (C, Volume, "Mix_Volume");
 
-  function VolumeChunk
-   (chunk  : chunk_access_t;
-    volume : volume_type_t) return c.int;
-  function volume_chunk 
-   (chunk  : chunk_access_t;
-    volume : volume_type_t) return c.int renames VolumeChunk;
-  pragma import (c, VolumeChunk, "Mix_VolumeChunk");
+  function VolumeChunk (Chunk : Chunk_Access_t; Volume : Volume_Type_t) return C.int;
+  function Volume_Chunk (Chunk : Chunk_Access_t; Volume : Volume_Type_t) return C.int renames VolumeChunk;
+  pragma Import (C, VolumeChunk, "Mix_VolumeChunk");
 
-  function VolumeMusic (volume: volume_type_t) return c.int;
-  function volume_music (volume: volume_type_t) return c.int renames VolumeMusic;
-  pragma import (c, VolumeMusic, "Mix_VolumeMusic");
+  function VolumeMusic (Volume : Volume_Type_t) return C.int;
+  function Volume_Music (Volume : Volume_Type_t) return C.int renames VolumeMusic;
+  pragma Import (C, VolumeMusic, "Mix_VolumeMusic");
 
   -- Halt playing of a particular channel.
-  function HaltChannel (chan : c.int) return c.int;
-  function HaltGroup (tag : c.int) return c.int;
-  function HaltMusic return c.int;
-  function halt_channel (chan : c.int) return c.int renames HaltChannel;
-  function halt_group (tag : c.int) return c.int renames HaltGroup;
-  function halt_music return c.int renames HaltMusic;
-  pragma import (c, HaltChannel, "Mix_HaltChannel");
-  pragma import (c, HaltGroup, "Mix_HaltGroup");
-  pragma import (c, HaltMusic, "Mix_HaltMusic");
+  function HaltChannel (Channel : C.int) return C.int;
+  function HaltGroup (Tag : C.int) return C.int;
+  function HaltMusic return  C.int;
+  function Halt_Channel (Channel : C.int) return C.int renames HaltChannel;
+  function Halt_Group (Tag : C.int) return C.int renames HaltGroup;
+  function Halt_Music return  C.int renames HaltMusic;
+  pragma Import (C, HaltChannel, "Mix_HaltChannel");
+  pragma Import (C, HaltGroup, "Mix_HaltGroup");
+  pragma Import (C, HaltMusic, "Mix_HaltMusic");
 
   -- Change the expiration delay for a particular channel.
-  function ExpireChannel
-   (chan  : c.int;
-    ticks : c.int) return c.int;
-  function expire_channel
-   (chan  : c.int;
-    ticks : c.int) return c.int renames ExpireChannel;
-  pragma import (c, ExpireChannel, "Mix_ExpireChannel");
+  function ExpireChannel (Channel : C.int; Ticks : C.int) return C.int;
+  function Expire_Channel (Channel : C.int; Ticks : C.int) return C.int renames ExpireChannel;
+  pragma Import (C, ExpireChannel, "Mix_ExpireChannel");
 
   -- Halt a channel, fading it out progressively until it's silent.
-  function FadeOutChannel
-   (which : c.int;
-    ms    : c.int) return c.int;
-  function FadeOutGroup
-   (tag : c.int;
-    ms  : c.int) return c.int;
-  function FadeOutMusic (ms : c.int) return c.int;
-  function fade_out_Channel
-   (which : c.int;
-    ms    : c.int) return c.int renames FadeOutChannel;
-  function fade_out_Group
-   (tag : c.int;
-    ms  : c.int) return c.int renames FadeOutGroup;
-  function fade_out_Music (ms: c.int) return c.int renames FadeOutMusic;
-  pragma import (c, FadeOutChannel, "Mix_FadeOutChannel");
-  pragma import (c, FadeOutGroup, "Mix_FadeOutGroup");
-  pragma import (c, FadeOutMusic, "Mix_FadeOutMusic");
+  function FadeOutChannel (Which : C.int; Ms : C.int) return C.int;
+  function FadeOutGroup (Tag : C.int; Ms : C.int) return C.int;
+  function FadeOutMusic (Ms : C.int) return C.int;
+  function Fade_Out_Channel (Which : C.int; Ms : C.int) return C.int renames FadeOutChannel;
+  function Fade_Out_Group (Tag : C.int; Ms : C.int) return C.int renames FadeOutGroup;
+  function Fade_Out_Music (Ms : C.int) return C.int renames FadeOutMusic;
+  pragma Import (C, FadeOutChannel, "Mix_FadeOutChannel");
+  pragma Import (C, FadeOutGroup, "Mix_FadeOutGroup");
+  pragma Import (C, FadeOutMusic, "Mix_FadeOutMusic");
 
   -- Query the fading status of a channel
-  function FadingMusic return fading_type_t;
-  function fading_music return fading_type_t renames FadingMusic;
-  function FadingChannel (chan : c.int) return fading_type_t;
-  function fading_channel (chan : c.int) return fading_type_t renames FadingChannel;
-  pragma import (c, FadingMusic, "Mix_FadingMusic");
-  pragma import (c, FadingChannel, "Mix_FadingChannel");
+  function FadingMusic return Fading_Type_t;
+  function Fading_Music return Fading_Type_t renames FadingMusic;
+  function FadingChannel (Channel : C.int) return Fading_Type_t;
+  function Fading_Channel (Channel : C.int) return Fading_Type_t renames FadingChannel;
+  pragma Import (C, FadingMusic, "Mix_FadingMusic");
+  pragma Import (C, FadingChannel, "Mix_FadingChannel");
 
   -- Pause/Resume a particular channel
-  procedure pause (chan : c.int);
-  procedure resume (chan : c.int);
-  function paused (chan : c.int) return c.int;
-  pragma import (c, pause, "Mix_Pause");
-  pragma import (c, resume, "Mix_Resume");
-  pragma import (c, paused, "Mix_Paused");
+  procedure Pause (Channel : C.int);
+  procedure Resume (Channel : C.int);
+  function Paused (Channel : C.int) return C.int;
+  pragma Import (C, Pause, "Mix_Pause");
+  pragma Import (C, Resume, "Mix_Resume");
+  pragma Import (C, Paused, "Mix_Paused");
 
   -- Pause/Resume the music stream
   procedure PauseMusic;
   procedure ResumeMusic;
   procedure RewindMusic;
-  function PausedMusic return c.int;
-  procedure pause_music renames PauseMusic;
-  procedure resume_music renames ResumeMusic;
-  procedure rewind_music renames RewindMusic;
-  function paused_music return c.int renames PausedMusic;
-  pragma import (c, PauseMusic, "Mix_PauseMusic");
-  pragma import (c, ResumeMusic, "Mix_ResumeMusic");
-  pragma import (c, RewindMusic, "Mix_RewindMusic");
-  pragma import (c, PausedMusic, "Mix_PausedMusic");
+  function PausedMusic return  C.int;
+  procedure Pause_Music renames PauseMusic;
+  procedure Resume_Music renames ResumeMusic;
+  procedure Rewind_Music renames RewindMusic;
+  function Paused_Music return  C.int renames PausedMusic;
+  pragma Import (C, PauseMusic, "Mix_PauseMusic");
+  pragma Import (C, ResumeMusic, "Mix_ResumeMusic");
+  pragma Import (C, RewindMusic, "Mix_RewindMusic");
+  pragma Import (C, PausedMusic, "Mix_PausedMusic");
 
   -- Set the current position in the music stream.
-  function SetMusicPosition (position : c.double) return c.int;
-  function set_music_position (position : c.double) return c.int renames SetMusicPosition;
-  pragma import (c, SetMusicPosition, "Mix_SetMusicPosition");
+  function SetMusicPosition (Position : C.double) return C.int;
+  function Set_Music_Position (Position : C.double) return C.int renames SetMusicPosition;
+  pragma Import (C, SetMusicPosition, "Mix_SetMusicPosition");
 
   -- Check the status of a specific channel.
-  function SetPlaying (chan : c.int) return c.int;
-  function set_playing (chan : c.int) return c.int renames SetPlaying;
-  pragma import (c, SetPlaying, "Mix_SetPlaying");
+  function SetPlaying (Channel : C.int) return C.int;
+  function Set_Playing (Channel : C.int) return C.int renames SetPlaying;
+  pragma Import (C, SetPlaying, "Mix_SetPlaying");
 
-  function SetPlayingMusic return c.int;
-  function set_playing_music return c.int renames SetPlayingMusic;
-  pragma import (c, SetPlayingMusic, "Mix_SetPlayingMusic");
+  function SetPlayingMusic return  C.int;
+  function Set_Playing_Music return  C.int renames SetPlayingMusic;
+  pragma Import (C, SetPlayingMusic, "Mix_SetPlayingMusic");
 
   -- Synchro value is set by MikMod from modules while playing.
-  function SetSynchroValue (chan : c.int) return c.int;
-  function set_synchro_value (chan : c.int) return c.int renames SetSynchroValue;
-  pragma import (c, SetSynchroValue, "Mix_SetSynchroValue");
+  function SetSynchroValue (Channel : C.int) return C.int;
+  function Set_Synchro_Value (Channel : C.int) return C.int renames SetSynchroValue;
+  pragma Import (C, SetSynchroValue, "Mix_SetSynchroValue");
 
-  function GetSynchroValue return c.int;
-  function get_synchro_value return c.int renames GetSynchroValue;
-  pragma import (c, GetSynchroValue, "Mix_GetSynchroValue");
- 
+  function GetSynchroValue return  C.int;
+  function Get_Synchro_Value return  C.int renames GetSynchroValue;
+  pragma Import (C, GetSynchroValue, "Mix_GetSynchroValue");
+
   -- Get the Mix_Chunk currently associated with a mixer channel.
-  function GetChunk (chan : c.int) return chunk_access_t;
-  function get_chunk (chan : c.int) return chunk_access_t renames GetChunk;
-  pragma import (c, GetChunk, "Mix_GetChunk");
+  function GetChunk (Channel : C.int) return Chunk_Access_t;
+  function Get_Chunk (Channel : C.int) return Chunk_Access_t renames GetChunk;
+  pragma Import (C, GetChunk, "Mix_GetChunk");
 
   -- Close the mixer, halting all playing audio.
   procedure CloseAudio;
-  procedure close_audio renames CloseAudio;
-  pragma import (c, CloseAudio, "Mix_CloseAudio");
+  procedure Close_Audio renames CloseAudio;
+  pragma Import (C, CloseAudio, "Mix_CloseAudio");
 
-  function GetError return cs.chars_ptr renames SDL.error.GetError;
-  function GetError return string renames SDL.error.GetError;
-  function get_error return cs.chars_ptr renames SDL.error.get_error;
-  function get_error return string renames SDL.error.get_error;
+  function Geterror return  Cs.chars_ptr renames Sdl.Error.Geterror;
+  function Geterror return String renames Sdl.Error.Geterror;
+  function Get_Error return  Cs.chars_ptr renames Sdl.Error.Get_Error;
+  function Get_Error return String renames Sdl.Error.Get_Error;
 
-end SDL.mixer;
+end Sdl.Mixer;

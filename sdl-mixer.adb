@@ -1,20 +1,20 @@
-package body SDL.mixer is
+package body SDL.Mixer is
 
   function PlayChannel
-   (chan  : c.int;
-    chunk : chunk_access_t;
-    loops : c.int) return c.int is
+   (Channel : C.int;
+    Chunk   : Chunk_Access_t;
+    Loops   : C.int) return C.int is
   begin
-    return PlayChannelTimed (chan, chunk, loops, -1);
+    return PlayChannelTimed (Channel, Chunk, Loops, -1);
   end PlayChannel;
 
   function FadeInChannel
-   (chan  : c.int;
-    chunk : chunk_access_t;
-    loops : c.int;
-    ms    : c.int) return c.int is
+   (Channel : C.int;
+    Chunk   : Chunk_Access_t;
+    Loops   : C.int;
+    Ms      : C.int) return C.int is
   begin
-    return FadeInChannelTimed (chan, chunk, loops, ms, -1);
+    return FadeInChannelTimed (Channel, Chunk, Loops, Ms, -1);
   end FadeInChannel;
 
-end SDL.mixer;
+end SDL.Mixer;
