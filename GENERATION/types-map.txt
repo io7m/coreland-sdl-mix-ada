@@ -1,8 +1,8 @@
-sdl.mixer.chunk_t:Mix_Chunk
-sdl.mixer.chunk_t:struct Mix_Chunk
-sdl.mixer.effect_done_func_t:Mix_EffectDone_t
-sdl.mixer.effect_func_t:Mix_EffectFunc_t
-sdl.mixer.fading_type_t:Mix_Fading
-sdl.mixer.music_access_t:Mix_Music *
-sdl.mixer.music_t:Mix_Music *
-sdl.mixer.music_type_t:Mix_MusicType
+SDL.Mixer.Chunk_t:Mix_Chunk
+SDL.Mixer.Chunk_t:struct Mix_Chunk
+SDL.Mixer.Effect_Done_Func_t:Mix_EffectDone_t
+SDL.Mixer.Effect_Func_t:Mix_EffectFunc_t
+SDL.Mixer.Fading_Type_t:Mix_Fading
+SDL.Mixer.Music_Access_t:Mix_Music *
+SDL.Mixer.Music_t:Mix_Music *
+SDL.Mixer.Music_Type_t:Mix_MusicType

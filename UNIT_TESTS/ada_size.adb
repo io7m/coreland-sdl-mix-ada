@@ -1,52 +1,60 @@
-with ada.text_io;
-with ada.command_line;
+-- auto generated, do not edit
 
-with sdl;
-with sdl.mixer;
+with Ada.Text_IO;
+with Ada.Command_Line;
 
-procedure ada_size is
-  package io renames ada.text_io;
-  package cmdline renames ada.command_line;
+with SDL;
+with SDL.Mixer;
 
-  -- auto generated - do not edit
-  sdl_mixer_chunk_t : aliased string := "sdl.mixer.chunk_t";
-  sdl_mixer_effect_done_func_t : aliased string := "sdl.mixer.effect_done_func_t";
-  sdl_mixer_effect_func_t : aliased string := "sdl.mixer.effect_func_t";
-  sdl_mixer_fading_type_t : aliased string := "sdl.mixer.fading_type_t";
-  sdl_mixer_music_access_t : aliased string := "sdl.mixer.music_access_t";
-  sdl_mixer_music_t : aliased string := "sdl.mixer.music_t";
-  sdl_mixer_music_type_t : aliased string := "sdl.mixer.music_type_t";
+procedure Ada_Size is
+  package IO renames Ada.Text_IO;
+  package Command_Line renames Ada.Command_Line;
 
-  type type_t is record
-    name : access string;
-    size : natural;
+  -- generic types
+  -- type generic_t is new Integer;
+  -- type generic_access_t is access all generic_t;
+
+  -- package instantiations
+
+  -- type names
+  SDL_Mixer_Chunk_t : aliased String := "SDL.Mixer.Chunk_t";
+  SDL_Mixer_Effect_Done_Func_t : aliased String := "SDL.Mixer.Effect_Done_Func_t";
+  SDL_Mixer_Effect_Func_t : aliased String := "SDL.Mixer.Effect_Func_t";
+  SDL_Mixer_Fading_Type_t : aliased String := "SDL.Mixer.Fading_Type_t";
+  SDL_Mixer_Music_Access_t : aliased String := "SDL.Mixer.Music_Access_t";
+  SDL_Mixer_Music_t : aliased String := "SDL.Mixer.Music_t";
+  SDL_Mixer_Music_Type_t : aliased String := "SDL.Mixer.Music_Type_t";
+
+  type Type_t is record
+    Name : access String;
+    Size : Natural;
   end record;
-  type type_lookup_t is array (natural range <>) of type_t;
+  type Type_Lookup_t is array (Natural range <>) of Type_t;
 
-  types : aliased constant type_lookup_t := (
-    (sdl_mixer_chunk_t'access, sdl.mixer.chunk_t'size),
-    (sdl_mixer_effect_done_func_t'access, sdl.mixer.effect_done_func_t'size),
-    (sdl_mixer_effect_func_t'access, sdl.mixer.effect_func_t'size),
-    (sdl_mixer_fading_type_t'access, sdl.mixer.fading_type_t'size),
-    (sdl_mixer_music_access_t'access, sdl.mixer.music_access_t'size),
-    (sdl_mixer_music_t'access, sdl.mixer.music_t'size),
-    (sdl_mixer_music_type_t'access, sdl.mixer.music_type_t'size)
+  Types : aliased constant Type_Lookup_t := (
+    (SDL_Mixer_Chunk_t'Access, SDL.Mixer.Chunk_t'Size),
+    (SDL_Mixer_Effect_Done_Func_t'Access, SDL.Mixer.Effect_Done_Func_t'Size),
+    (SDL_Mixer_Effect_Func_t'Access, SDL.Mixer.Effect_Func_t'Size),
+    (SDL_Mixer_Fading_Type_t'Access, SDL.Mixer.Fading_Type_t'Size),
+    (SDL_Mixer_Music_Access_t'Access, SDL.Mixer.Music_Access_t'Size),
+    (SDL_Mixer_Music_t'Access, SDL.Mixer.Music_t'Size),
+    (SDL_Mixer_Music_Type_t'Access, SDL.Mixer.Music_Type_t'Size)
   );
 
-  procedure find (name : string) is
+  procedure Find (Name : String) is
   begin
-    for index in types'range loop
-      if types (index).name.all = name then
-        io.put_line (natural'image (types (index).size));
+    for Index in Types'Range loop
+      if Types (Index).Name.all = Name then
+        IO.Put_Line (Natural'Image (Types (Index).Size));
         return;
       end if;
     end loop;
-    raise program_error with "fatal: unknown ada type";
-  end find;
+    raise Program_Error with "fatal: unknown ada type";
+  end Find;
 
 begin
-  if cmdline.argument_count /= 1 then
-    raise program_error with "fatal: incorrect number of args";
+  if Command_Line.Argument_Count /= 1 then
+    raise Program_Error with "fatal: incorrect number of args";
   end if;
-  find (cmdline.argument (1));
-end ada_size;
+  Find (Command_Line.Argument (1));
+end Ada_Size;

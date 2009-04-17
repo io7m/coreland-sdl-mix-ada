@@ -1,12 +1,12 @@
 #!/bin/sh
 # auto generated, do not edit
 
-size_ada=`./ada_size "sdl.mixer.effect_done_func_t"`
+size_ada=`./ada_size "SDL.Mixer.Effect_Done_Func_t"`
 if [ $? -ne 0 ]; then exit 2; fi
 size_c=`./c_size "Mix_EffectDone_t"`
 if [ $? -ne 0 ]; then exit 2; fi
 
-printf "%8d %8d %s -> %s\n" "${size_ada}" "${size_c}" "sdl.mixer.effect_done_func_t" "Mix_EffectDone_t"
+printf "%8d %8d %s -> %s\n" "${size_ada}" "${size_c}" "SDL.Mixer.Effect_Done_Func_t" "Mix_EffectDone_t"
 
 if [ ${size_ada} -ne ${size_c} ]
 then

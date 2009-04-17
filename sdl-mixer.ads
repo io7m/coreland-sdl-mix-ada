@@ -1,10 +1,10 @@
-with Sdl.Audio;
-with Sdl.Error;
-with Sdl.Rwops;
+with SDL.Audio;
+with SDL.Error;
+with SDL.RWops;
 with Interfaces.C.Strings;
 with Interfaces.C;
 
-package Sdl.Mixer is
+package SDL.Mixer is
   package C renames Interfaces.C;
   package Cs renames Interfaces.C.Strings;
 
@@ -105,8 +105,8 @@ package Sdl.Mixer is
   pragma Import (C, QuerySpec, "Mix_QuerySpec");
 
   -- Load a wave file or a music (.mod .s3m .it .xm)
-  function LoadWAV_RW (Src : Rwops.Rwops_Access_t; Freesrc : C.int) return Chunk_Access_t;
-  function Load_WAV_RW (Src : Rwops.Rwops_Access_t; Freesrc : C.int) return Chunk_Access_t renames LoadWAV_RW;
+  function LoadWAV_RW (Source : RWops.RWops_Access_t; Free_Source : C.int) return Chunk_Access_t;
+  function Load_WAV_RW (Source : RWops.RWops_Access_t; Free_Source : C.int) return Chunk_Access_t renames LoadWAV_RW;
   pragma Import (C, LoadWAV_RW, "Mix_LoadWAV_RW");
 
   function LoadWAV (File : String) return Chunk_Access_t;
@@ -481,9 +481,9 @@ package Sdl.Mixer is
   procedure Close_Audio renames CloseAudio;
   pragma Import (C, CloseAudio, "Mix_CloseAudio");
 
-  function Geterror return  Cs.chars_ptr renames Sdl.Error.Geterror;
-  function Geterror return String renames Sdl.Error.Geterror;
-  function Get_Error return  Cs.chars_ptr renames Sdl.Error.Get_Error;
-  function Get_Error return String renames Sdl.Error.Get_Error;
+  function Geterror return  Cs.chars_ptr renames SDL.Error.Geterror;
+  function Geterror return String renames SDL.Error.Geterror;
+  function Get_Error return  Cs.chars_ptr renames SDL.Error.Get_Error;
+  function Get_Error return String renames SDL.Error.Get_Error;
 
-end Sdl.Mixer;
+end SDL.Mixer;
